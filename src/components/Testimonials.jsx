@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 function Testimonials({ interval = 4500 }) {
   const [slides, setSlides] = useState([]);
@@ -26,13 +26,33 @@ function Testimonials({ interval = 4500 }) {
 
     fetchTestimonials();
   }, []);
+  const touchStart = useRef(null);
 
+  const onTouchStart = (e) => {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+  };
+
+  const onTouchEnd = (e) => {
+    if (!touchStart.current) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStart.current.x;
+    const dy = t.clientY - touchStart.current.y;
+    touchStart.current = null;
+
+    // horizontal swipe only, ignore small moves and vertical scrolls
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      dx < 0 ? next() : prev();
+    }
+  };
   return (
     <section
       className="relative flex h-full w-full flex-col overflow-hidden px-4 py-4 sm:px-6 gap-2 md:gap-10 lg:gap-8 md:py-12 "
       onPointerEnter={(e) => e.pointerType === "mouse" && setPaused(true)}
       onPointerLeave={(e) => e.pointerType === "mouse" && setPaused(false)}
       onFocus={(e) => e.target.matches(":focus-visible") && setPaused(true)}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
       onBlur={() => setPaused(false)}
       aria-roledescription="carousel"
       aria-label="Testimonials"

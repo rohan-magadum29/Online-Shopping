@@ -36,9 +36,30 @@ export default function HeroSlider({ interval = 4500, category }) {
     const original = off > 0 ? price / (1 - discountPercentage / 100) : null;
     return { price, off, original };
   };
+  const touchStart = useRef(null);
+
+  const onTouchStart = (e) => {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+  };
+
+  const onTouchEnd = (e) => {
+    if (!touchStart.current) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStart.current.x;
+    const dy = t.clientY - touchStart.current.y;
+    touchStart.current = null;
+
+    // horizontal swipe only, ignore small moves and vertical scrolls
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      dx < 0 ? next() : prev();
+    }
+  };
   return (
     <section
       className="relative w-full overflow-hidden bg-neutral"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
       onPointerEnter={(e) => e.pointerType === "mouse" && setPaused(true)}
       onPointerLeave={(e) => e.pointerType === "mouse" && setPaused(false)}
       onFocus={(e) => e.target.matches(":focus-visible") && setPaused(true)}
@@ -46,7 +67,7 @@ export default function HeroSlider({ interval = 4500, category }) {
       aria-roledescription="carousel"
       aria-label="Featured collections"
     >
-      <div className="relative h-110 md:120">
+      <div className="relative h-110 md:h-120">
         {slides.map((s, i) => {
           const pricing = getPricing({
             price: s?.price,
