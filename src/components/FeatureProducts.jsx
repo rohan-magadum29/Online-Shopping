@@ -38,7 +38,9 @@ function ProductCard({ product }) {
   );
 }
 const SkeletonLoader = () => {
-  return <div className="bg-gray-400 h-30 md:h-70 animate-pulse rounded-md" />;
+  return (
+    <div className="bg-gray-400 w-full h-full aspect-square animate-pulse rounded-md" />
+  );
 };
 export default function FeaturedProducts({ category }) {
   const [products, setProducts] = useState([]);
