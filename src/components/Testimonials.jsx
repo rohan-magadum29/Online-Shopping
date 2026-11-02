@@ -4,6 +4,7 @@ function Testimonials({ interval = 4500 }) {
   const [slides, setSlides] = useState([]);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const next = useCallback(
     () => setIndex((i) => (i + 1) % slides.length),
@@ -22,6 +23,7 @@ function Testimonials({ interval = 4500 }) {
       const res = await fetch(`https://testimonialapi.vercel.app/api`);
       const testimonials = await res.json();
       setSlides(testimonials);
+      setIsLoading(false);
     };
 
     fetchTestimonials();
@@ -62,34 +64,38 @@ function Testimonials({ interval = 4500 }) {
       </h2>
 
       <div className="mx-auto grid w-full max-w-4xl text-center">
-        {slides.map((s, i) => {
-          return (
-            <div
-              key={s.title}
-              aria-hidden={i !== index}
-              className={`col-start-1 row-start-1 transition-opacity duration-300 ease-in-out ${
-                i === index ? "z-10 opacity-100" : "z-0 opacity-0"
-              }`}
-            >
-              <div className="mx-auto flex h-full flex-col items-center justify-center gap-4 md:gap-6">
-                <div className="flex w-full flex-col items-center justify-center gap-2 sm:flex-row sm:gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary via-primary/90 to-white font-semibold text-white md:h-12 md:w-12">
-                    {s.name
-                      .split(" ")
-                      .map((item) => item?.[0] || "")
-                      .join("")}
-                  </span>
-                  <h2 className="text-lg italic leading-tight text-gray-600 md:text-2xl lg:text-3xl">
-                    {s.name}
-                  </h2>
+        {!isLoading ? (
+          slides.map((s, i) => {
+            return (
+              <div
+                key={s.title}
+                aria-hidden={i !== index}
+                className={`col-start-1 row-start-1 transition-opacity duration-300 ease-in-out ${
+                  i === index ? "z-10 opacity-100" : "z-0 opacity-0"
+                }`}
+              >
+                <div className="mx-auto flex h-full flex-col items-center justify-center gap-4 md:gap-6">
+                  <div className="flex w-full flex-col items-center justify-center gap-2 sm:flex-row sm:gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary via-primary/90 to-white font-semibold text-white md:h-12 md:w-12">
+                      {s.name
+                        .split(" ")
+                        .map((item) => item?.[0] || "")
+                        .join("")}
+                    </span>
+                    <h2 className="text-lg italic leading-tight text-gray-600 md:text-2xl lg:text-3xl">
+                      {s.name}
+                    </h2>
+                  </div>
+                  <p className="px-2 text-base font-light leading-relaxed text-gray-600 sm:px-6 sm:text-lg md:text-xl">
+                    {s.message}
+                  </p>
                 </div>
-                <p className="px-2 text-base font-light leading-relaxed text-gray-600 sm:px-6 sm:text-lg md:text-xl">
-                  {s.message}
-                </p>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        ) : (
+          <div className="bg-gray-400 h-full animate-pulse" />
+        )}
       </div>
 
       <div className="flex justify-center gap-3 sm:gap-4 mt-2 md:mt-4">

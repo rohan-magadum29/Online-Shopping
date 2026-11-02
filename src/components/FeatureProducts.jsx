@@ -37,9 +37,12 @@ function ProductCard({ product }) {
     </article>
   );
 }
-
+const SkeletonLoader = () => {
+  return <div className="bg-gray-400 h-30 animate-pulse rounded-md" />;
+};
 export default function FeaturedProducts({ category }) {
   const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const fetchProducts = async () => {
       if (category) {
@@ -48,6 +51,7 @@ export default function FeaturedProducts({ category }) {
         );
         const productsJson = await res.json();
         setProducts(productsJson?.products);
+        setIsLoading(false);
       }
     };
 
@@ -67,18 +71,20 @@ export default function FeaturedProducts({ category }) {
         </h2>
 
         <ul className="mt-6 md:mt-8 grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-5  md:grid-cols-4 md:gap-y-8">
-          {products.map((product) => (
-            <li key={product.id}>
-              <ProductCard product={product} />
-            </li>
-          ))}
+          {!isLoading ? (
+            products.map((product) => (
+              <li key={product.id}>
+                <ProductCard product={product} />
+              </li>
+            ))
+          ) : (
+            <>
+              {Array.from({ length: 4 }).map(() => {
+                return <SkeletonLoader />;
+              })}
+            </>
+          )}
         </ul>
-
-        {/* <div className="mt-4 md:mt-6 lg:mt-8 text-center">
-          <button className=" cursor-pointer inline-flex min-h-11 items-center justify-center rounded bg-secondary px-6 text-sm font-medium text-white transition hover:bg-orange-600 sm:text-base">
-            View All
-          </button>
-        </div> */}
       </div>
     </section>
   );

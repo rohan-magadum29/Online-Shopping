@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 
 export default function HeroSlider({ interval = 4500, category }) {
   const [slides, setSlides] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -24,11 +25,10 @@ export default function HeroSlider({ interval = 4500, category }) {
           `https://dummyjson.com/products/category/${category}?limit=${4}&sortBy=discountPercentage&order=desc&select=id,title,description,thumbnail,price,discountPercentage`,
         );
         const productsJson = await res.json();
-        console.log({ productsJson });
         setSlides(productsJson?.products);
+        setIsLoading(false);
       }
     };
-
     fetchProducts();
   }, [category]);
   const getPricing = ({ price, discountPercentage }) => {
@@ -68,52 +68,56 @@ export default function HeroSlider({ interval = 4500, category }) {
       aria-label="Featured collections"
     >
       <div className="relative h-110 md:h-120">
-        {slides.map((s, i) => {
-          const pricing = getPricing({
-            price: s?.price,
-            discountPercentage: s?.discountPercentage,
-          });
-          return (
-            <div
-              key={s.title}
-              aria-hidden={i !== index}
-              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                i === index ? "opacity-100 z-10" : "opacity-0 z-0"
-              }`}
-            >
-              <div className="absolute inset-0 bg-linear-to-b from-primary via-primary/75 to-secondary sm:bg-linear-to-r" />
+        {!isLoading ? (
+          slides.map((s, i) => {
+            const pricing = getPricing({
+              price: s?.price,
+              discountPercentage: s?.discountPercentage,
+            });
+            return (
+              <div
+                key={s.title}
+                aria-hidden={i !== index}
+                className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                  i === index ? "opacity-100 z-10" : "opacity-0 z-0"
+                }`}
+              >
+                <div className="absolute inset-0 bg-linear-to-b from-primary via-primary/75 to-secondary sm:bg-linear-to-r" />
 
-              <img
-                loading={i === 0 ? "eager" : "lazy"}
-                src={s.thumbnail}
-                alt={s.description}
-                className="absolute bottom-25 left-1/2 h-[46%] w-[70%] max-w-xs -translate-x-1/2 object-contain transition-[filter] duration-300 hover:filter-[drop-shadow(0_0_2px_rgba(0,0,0,0.6))_drop-shadow(0_0_6px_rgba(0,0,0,0.35))_drop-shadow(0_16px_32px_rgba(0,0,0,0.4))] sm:bottom-0 sm:left-auto sm:right-[6%] sm:h-[88%] sm:w-[38%] sm:max-w-105 sm:translate-x-0 md:right-[12%]"
-              />
-              <div className="relative z-10 flex h-full flex-col items-center justify-start px-6 pt-8 text-center sm:max-w-[55%] sm:items-start sm:justify-center sm:px-12 sm:pt-0 sm:text-left md:px-[8%]">
-                <h2 className="text-xl font-semibold leading-tight text-white md:text-2xl lg:text-3xl">
-                  {s.title}
-                </h2>
-                <div className="mt-2 flex flex-col md:flex-row flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:mt-4 sm:justify-start">
-                  <p className="text-xl font-semibold text-white sm:text-2xl md:text-3xl">
-                    ${pricing.price.toFixed(2)}
-                  </p>
+                <img
+                  loading={i === 0 ? "eager" : "lazy"}
+                  src={s.thumbnail}
+                  alt={s.description}
+                  className="absolute bottom-25 left-1/2 h-[46%] w-[70%] max-w-xs -translate-x-1/2 object-contain transition-[filter] duration-300 hover:filter-[drop-shadow(0_0_2px_rgba(0,0,0,0.6))_drop-shadow(0_0_6px_rgba(0,0,0,0.35))_drop-shadow(0_16px_32px_rgba(0,0,0,0.4))] sm:bottom-0 sm:left-auto sm:right-[6%] sm:h-[88%] sm:w-[38%] sm:max-w-105 sm:translate-x-0 md:right-[12%]"
+                />
+                <div className="relative z-10 flex h-full flex-col items-center justify-start px-6 pt-8 text-center sm:max-w-[55%] sm:items-start sm:justify-center sm:px-12 sm:pt-0 sm:text-left md:px-[8%]">
+                  <h2 className="text-xl font-semibold leading-tight text-white md:text-2xl lg:text-3xl">
+                    {s.title}
+                  </h2>
+                  <div className="mt-2 flex flex-col md:flex-row flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:mt-4 sm:justify-start">
+                    <p className="text-xl font-semibold text-white sm:text-2xl md:text-3xl">
+                      ${pricing.price.toFixed(2)}
+                    </p>
 
-                  {pricing.original && (
-                    <span className="rounded-full bg-orange-500 px-3 py-1 text-base font-semibold tracking-wide text-white  md:text-lg">
-                      {pricing.off}% OFF
-                    </span>
-                  )}
+                    {pricing.original && (
+                      <span className="rounded-full bg-orange-500 px-3 py-1 text-base font-semibold tracking-wide text-white  md:text-lg">
+                        {pricing.off}% OFF
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    tabIndex={i === index ? 0 : -1}
+                    className="cursor-pointer absolute bottom-12 md:inline-block md:bottom-24  mt-4  w-fit rounded bg-orange-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-orange-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:mt-6"
+                  >
+                    Buy Now
+                  </button>
                 </div>
-                <button
-                  tabIndex={i === index ? 0 : -1}
-                  className="cursor-pointer absolute bottom-12 md:inline-block md:bottom-24  mt-4  w-fit rounded bg-orange-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-orange-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:mt-6"
-                >
-                  Buy Now
-                </button>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        ) : (
+          <div className="bg-gray-400 h-full animate-pulse" />
+        )}
       </div>
 
       <button
